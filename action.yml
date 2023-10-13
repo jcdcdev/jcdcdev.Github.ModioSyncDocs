@@ -5,63 +5,63 @@ branding:
   icon: 'refresh-cw'
   color: 'gray-dark'
 inputs:
-  LOGO_PATH:
+  logoPath:
     description: 'Path to the logo.'
     required: true
-  IMAGES_PATH:
+  imagesPath:
     description: 'Path to the images.'
     required: true
-  README_PATH:
+  readmePath:
     description: 'Path to the README file.'
     required: true
-  PROJECT_AUTHOR:
+  projectAuthor:
     description: 'Author of the project.'
     required: true
-  PROJECT_NAME:
+  projectName:
     description: 'Name of the project.'
     required: true
   VERSION:
     description: 'Optional - Version of the mod. Defaults to latest github release.'
     required: false
-  PROJECT_URL:
+  projectUrl:
     description: 'Homepage URL displayed on mod.io.'
-    required: true
-  IMEJIS_GENERATE_IMAGE:
+    required: false
+  imejisGenerateImage:
     description: 'Generate image from imejis.io.'
     required: false
     default: "false"
-  IMEJIS_DESIGN_ID:
+  imejisDesignId:
     description: 'Imejis Design ID.'
     required: false
-  IMEJIS_KEY:
+  imejisKey:
     description: 'Imejis Key.'
     required: false
-  MODIO_GAME:
+  modioGame:
     description: 'Mod.io Game Id.'
     required: true
-  MODIO_MOD:
+  modioMod:
     description: 'Mod.io Mod Id.'
     required: true
-  MODIO_TOKEN:
+  modioToken:
     description: 'Mod.io Token.'
     required: true
-  BACKGROUND_COLOR:
+  backgroundColor:
     description: 'Optional - Background color used to pad resized images.'
     required: false
     default: "#0a1206"
-  IMAGE_SIZE:
+  imageSize:
     description: 'Optional - ImageMagick resize image resolution.'
     required: false
     default: "1920x1080"
-  LOGO_UPLOAD_PATH:
+  logoUploadPath:
     description: 'Optional - Path to upload the logo.'
     required: false
-    default: "temp_upload/0000_logo.png"
-  IMAGES_UPLOAD_PATH:
+    default: "temp_upload/0000_Logo.png"
+  imagesUploadPath:
     description: 'Optional - Path to upload the images.'
     required: false
     default: "temp_upload"
-  IMAGE_ZIP:
+  imageZip:
     description: 'Optional - Path to the zip file of the images.'
     required: false
     default: "temp_upload/images.zip"
@@ -70,10 +70,16 @@ runs:
   steps:
     - name: Determine Version
       shell: bash
-      if: ${{ inputs.VERSION }} == ""
+      if: $INPUT_VERSION }} == ""
       run: |
         VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "INPUT_VERSION=$VERSION" >> $GITHUB_ENV
+    - name: Determine Version
+      shell: bash
+      if: $INPUT_PROJECT_URL }} == ""
+      run: |
+        PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
+        echo "INPUT_PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
     - name: Install tools
       shell: bash
       run: |
@@ -92,19 +98,19 @@ runs:
     - name: Convert README to HTML
       shell: bash
       run: | 
-        pandoc ${{ inputs.README_PATH }} -o README.html
+        pandoc $INPUT_README_PATH }} -o README.html
         README_HTML_SINGLE_LINE=$(cat README.html | tr '\n' ' ')
         README_ENCODED=$(echo -n "$README_HTML_SINGLE_LINE" | jq -s -R -r @uri)
         echo "README_HTML=$(printf '%q' "$README_ENCODED")" >> $GITHUB_ENV
     - name: Generate Logo
       shell: bash
       run: |      
-        if [ ! -f "${{ inputs.LOGO_PATH }}" ]; then
-          if [ "${{ inputs.IMEJIS_GENERATE_IMAGE }}" == "false" ]; then
-              echo "No logo found at ${{ inputs.LOGO_PATH }} and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
-              text="${{ inputs.PROJECT_NAME }} $VERSION}"
-              colour=${"${{ inputs.BACKGROUND_COLOR }}"//#/}
-              wget -O "${{ inputs.LOGO_PATH }}" "https://dummyimage.com/${{ inputs.IMAGE_SIZE }}/${colour}/ffffff&text=${text}"
+        if [ ! -f "$INPUT_LOGO_PATH }}" ]; then
+          if [ "$INPUT_IMEJIS_GENERATE_IMAGE }}" == "false" ]; then
+              echo "No logo found at $INPUT_LOGO_PATH }} and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
+              text="$INPUT_PROJECT_NAME }} $VERSION}"
+              colour=${"$INPUT_BACKGROUND_COLOR }}"//#/}
+              wget -O "$INPUT_LOGO_PATH }}" "https://dummyimage.com/$INPUT_IMAGE_SIZE }}/${colour}/ffffff&text=${text}"
             exit 1
           fi
 
@@ -113,31 +119,31 @@ runs:
             "project": "%s",
             "author": "%s",
             "version": "%s"
-          }' "${{ inputs.PROJECT_NAME }}" "${{ inputs.PROJECT_AUTHOR }}" "${{ inputs.VERSION }}"
+          }' "$INPUT_PROJECT_NAME }}" "$INPUT_PROJECT_AUTHOR }}" "$INPUT_VERSION }}"
 
           echo "Downloading logo from imejis.io"
-          curl "https://api.imejis.io/api/designs/${{ inputs.IMEJIS_DESIGN_ID }}" \
-            --header "dma-api-key: ${{ inputs.IMEJIS_KEY }}" \
+          curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID }}" \
+            --header "dma-api-key: $INPUT_IMEJIS_KEY }}" \
             --header 'Content-Type: application/json' \
             --data "$JSON_DATA" \
-            --output "${{ inputs.LOGO_PATH }}"
+            --output "$INPUT_LOGO_PATH }}"
         fi
     - name: Resize images for mod.io
       shell: bash
       run: |
-        mkdir -p "${{ inputs.IMAGES_UPLOAD_PATH }}"
-        rm -rf "${{ inputs.IMAGES_UPLOAD_PATH }}"/*
+        mkdir -p "$INPUT_IMAGES_UPLOAD_PATH }}"
+        rm -rf "$INPUT_IMAGES_UPLOAD_PATH }}"/*
 
-        convert "${{ inputs.LOGO_PATH }}" -resize "${{ inputs.IMAGE_SIZE }}" -background "${{ inputs.BACKGROUND_COLOR }}" -gravity center -extent "${{ inputs.IMAGE_SIZE }}" "${{ inputs.LOGO_UPLOAD_PATH }}"
+        convert "$INPUT_LOGO_PATH }}" -resize "$INPUT_IMAGE_SIZE }}" -background "$INPUT_BACKGROUND_COLOR }}" -gravity center -extent "$INPUT_IMAGE_SIZE }}" "$INPUT_LOGO_UPLOAD_PATH }}"
       
         for file in $IMAGES_PATH/*; do
           if [[ -f $file ]]; then
             filename=$(basename -- "$file")
             if file --mime-type "$file" | grep -qE 'image/(jpeg|png|gif|tiff|bmp)'; then
               if [[ $file == *.gif ]]; then
-                convert "${file}[0]" -resize "${{ inputs.IMAGE_SIZE }}" -background "${{ inputs.BACKGROUND_COLOR }}" -gravity center -extent "${{ inputs.IMAGE_SIZE }}" "${{ inputs.IMAGES_UPLOAD_PATH }}/${filename}.png"
+                convert "${file}[0]" -resize "$INPUT_IMAGE_SIZE }}" -background "$INPUT_BACKGROUND_COLOR }}" -gravity center -extent "$INPUT_IMAGE_SIZE }}" "$INPUT_IMAGES_UPLOAD_PATH }}/${filename}.png"
               else
-                convert "$file" -resize ${{ inputs.IMAGE_SIZE }} -background "${{ inputs.BACKGROUND_COLOR }}" -gravity center -extent ${{ inputs.IMAGE_SIZE }} "${{ inputs.IMAGES_UPLOAD_PATH }}/$filename"
+                convert "$file" -resize $INPUT_IMAGE_SIZE }} -background "$INPUT_BACKGROUND_COLOR }}" -gravity center -extent $INPUT_IMAGE_SIZE }} "$INPUT_IMAGES_UPLOAD_PATH }}/$filename"
               fi
             fi
           fi
@@ -145,30 +151,30 @@ runs:
     - name: Zip images
       shell: bash
       run: |
-        zip -r -j "${{ inputs.IMAGE_ZIP }}" "${{ inputs.IMAGES_UPLOAD_PATH }}" "${{ inputs.LOGO_UPLOAD_PATH }}"
+        zip -r -j "$INPUT_IMAGE_ZIP }}" "$INPUT_IMAGES_UPLOAD_PATH }}" "$INPUT_LOGO_UPLOAD_PATH }}"
     - name: Remove images from mod.io
       shell: bash
       run: |
-        RESPONSE=$(curl -s -H "Authorization: Bearer ${{ inputs.MODIO_TOKEN }}" "https://api.mod.io/v1/games/${{ inputs.MODIO_GAME }}/mods/${{ inputs.MODIO_MOD }}")
+        RESPONSE=$(curl -s -H "Authorization: Bearer $INPUT_MODIO_TOKEN }}" "https://api.mod.io/v1/games/$INPUT_MODIO_GAME }}/mods/$INPUT_MODIO_MOD }}")
         IMAGES_JSON=$(echo "$RESPONSE" | jq -r '.media.images[] | @base64')
         
         for image in $IMAGES_JSON; do
           filename=$(echo "$image" | base64 --decode | jq -r '.filename')
-          curl -X DELETE "https://api.mod.io/v1/games/${{ inputs.MODIO_GAME }}/mods/${{ inputs.MODIO_MOD }}/media" \
-          -H "Authorization: Bearer ${{ inputs.MODIO_TOKEN }}" \
+          curl -X DELETE "https://api.mod.io/v1/games/$INPUT_MODIO_GAME }}/mods/$INPUT_MODIO_MOD }}/media" \
+          -H "Authorization: Bearer $INPUT_MODIO_TOKEN }}" \
           -d "images[]=$filename"
         done
     - name: Upload images to mod.io
       shell: bash
       run: |
-        curl "https://api.mod.io/v1/games/${{ inputs.MODIO_GAME }}/mods/${{ inputs.MODIO_MOD }}/media" \
-        -H "Authorization: Bearer ${{ inputs.MODIO_TOKEN }}" \
-        -F "logo=@${{ inputs.LOGO_UPLOAD_PATH }}" \
-        -F "images=@${{ inputs.IMAGE_ZIP }}"
+        curl "https://api.mod.io/v1/games/$INPUT_MODIO_GAME }}/mods/$INPUT_MODIO_MOD }}/media" \
+        -H "Authorization: Bearer $INPUT_MODIO_TOKEN }}" \
+        -F "logo=@$INPUT_LOGO_UPLOAD_PATH }}" \
+        -F "images=@$INPUT_IMAGE_ZIP }}"
     - name: Update modio mod description
       shell: bash
       run: |
-        curl -X PUT "https://api.mod.io/v1/games/${{ inputs.MODIO_GAME }}/mods/${{ inputs.MODIO_MOD }}" \
-        -H "Authorization: Bearer ${{ inputs.MODIO_TOKEN }}" \
+        curl -X PUT "https://api.mod.io/v1/games/$INPUT_MODIO_GAME }}/mods/$INPUT_MODIO_MOD }}" \
+        -H "Authorization: Bearer $INPUT_MODIO_TOKEN }}" \
         -d "description=$README_HTML" \
-        -d "homepage_url=${{ inputs.PROJECT_URL }}"            
+        -d "homepage_url=$INPUT_PROJECT_URL }}"            
