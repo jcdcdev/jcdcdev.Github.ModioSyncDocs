@@ -24,13 +24,13 @@ jobs:
       run: |
         git config --local user.email "james@jcdc.dev"
         git config --local user.name "James"
-        git tag -a $GitVersion_SemVer -m "Release $GitVersion_SemVer"
+        git tag -a "$GitVersion_SemVer" -m "Release $GitVersion_SemVer"
     - name: Create new release
       uses: ncipollo/release-action@v1
       with:
         prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
         generateReleaseNotes: true
-        tag: $GitVersion_SemVer
+        tag: ${{ env.GitVersion_SemVer }}
         allowUpdates: true
     - name: Push changes
       uses: ad-m/github-push-action@master
