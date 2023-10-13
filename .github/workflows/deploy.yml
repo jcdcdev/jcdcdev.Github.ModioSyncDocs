@@ -9,12 +9,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
     - name: Create new release
-      uses: action-pack/github-release@v2
+      uses: ncipollo/release-action@v1
       with:
         prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
-        generate_release_notes: true
+        generateReleaseNotes: true
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
