@@ -31,6 +31,7 @@ jobs:
         prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
         generateReleaseNotes: true
         tag: $GitVersion_SemVer
+        allowUpdates: true
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
