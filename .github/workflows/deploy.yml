@@ -20,6 +20,8 @@ jobs:
     - name: Determine Version
       id: gitversion
       uses: gittools/actions/gitversion/execute@v0
+    - name: Tag commit
+      run: git tag -a $GitVersion_SemVer -m "Release $GitVersion_SemVer"
     - name: Create new release
       uses: ncipollo/release-action@v1
       with:
@@ -30,4 +32,5 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
+        force: true
+        tags: true
