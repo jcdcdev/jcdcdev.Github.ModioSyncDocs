@@ -101,7 +101,7 @@ runs:
       run: |      
         if [ ! -f "${{ inputs.LOGO_PATH }}" ]; then
           if [ "${{ inputs.IMEJIS_GENERATE_IMAGE }}" == "false" ]; then
-              echo "No logo found at ${{ inputs.LOGO_PATH }} and IMEJIS_GENERATE_IMAGE is false. "Downloading basic image."
+              echo "No logo found at ${{ inputs.LOGO_PATH }} and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
               text="${{ inputs.PROJECT_NAME }} $VERSION}"
               colour=${"${{ inputs.BACKGROUND_COLOR }}"//#/}
               wget -O "${{ inputs.LOGO_PATH }}" "https://dummyimage.com/${{ inputs.IMAGE_SIZE }}/${colour}/ffffff&text=${text}"
