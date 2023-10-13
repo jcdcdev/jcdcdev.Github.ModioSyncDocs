@@ -70,13 +70,13 @@ runs:
   steps:
     - name: Determine Version
       shell: bash
-      if: $INPUT_VERSION }} == ""
+      if: ${{ inputs.version }} == ""
       run: |
         VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         echo "INPUT_VERSION=$VERSION" >> $GITHUB_ENV
     - name: Determine Version
       shell: bash
-      if: $INPUT_PROJECT_URL }} == ""
+      if: ${{ inputs.projectUrl }} == ""
       run: |
         PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
         echo "INPUT_PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
