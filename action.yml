@@ -123,7 +123,7 @@ runs:
         echo "README_HTML=$(printf '%q' "$README_ENCODED")" >> $GITHUB_ENV
     - name: Generate Logo
       shell: bash
-      if: ${{ ! -f "$INPUT_LOGO_PATH" }}
+      if: ${{ ! -f "${{ env.INPUT_LOGO_PATH }}" }}
       run: |      
         if [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
             echo "No logo found at $INPUT_LOGO_PATH and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
