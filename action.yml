@@ -128,7 +128,6 @@ runs:
     
     - name: Generate Logo
       shell: bash
-      if: ${{ ! -f "${{ env.INPUT_LOGO_PATH }}" }}
       run: |      
         if [ -f "$INPUT_LOGO_PATH" ]; then
           echo "Logo found at $INPUT_LOGO_PATH"
