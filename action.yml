@@ -71,25 +71,23 @@ runs:
     - name: Set env vars
       shell: bash
       run: |
-        if ${{ inputs.version }} == ""; then
+        if "${{ inputs.version }}"" == ""; then
           VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         else
           VERSION=${{ inputs.version }}
         fi
-        if ${{ inputs.projectUrl }} == ""; then
+        if "${{ inputs.projectUrl }}"" == ""; then
           PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
         else
           PROJECT_URL=${{ inputs.projectUrl }}
         fi
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
+        echo "INPUT_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "INPUT_PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
         echo "INPUT_LOGO_PATH=${{ inputs.logoPath }}" >> $GITHUB_ENV
         echo "INPUT_IMAGES_PATH=${{ inputs.imagesPath }}" >> $GITHUB_ENV
         echo "INPUT_README_PATH=${{ inputs.readmePath }}" >> $GITHUB_ENV
         echo "INPUT_PROJECT_AUTHOR=${{ inputs.projectAuthor }}" >> $GITHUB_ENV
         echo "INPUT_PROJECT_NAME=${{ inputs.projectName }}" >> $GITHUB_ENV
-        echo "INPUT_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
-        echo "INPUT_PROJECT_URL=${{ inputs.projectUrl }}" >> $GITHUB_ENV
         echo "INPUT_IMEJIS_GENERATE_IMAGE=${{ inputs.imejisGenerateImage }}" >> $GITHUB_ENV
         echo "INPUT_IMEJIS_DESIGN_ID=${{ inputs.imejisDesignId }}" >> $GITHUB_ENV
         echo "INPUT_IMEJIS_KEY=${{ inputs.imejisKey }}" >> $GITHUB_ENV
@@ -129,7 +127,7 @@ runs:
         if [ ! -f "$INPUT_LOGO_PATH" ]; then
           if [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
               echo "No logo found at $INPUT_LOGO_PATH and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
-              text="$INPUT_PROJECT_NAME $VERSION}"
+              text="$INPUT_PROJECT_NAME $INPUT_VERSION}"
               colour=${"$INPUT_BACKGROUND_COLOR"//#/}
               wget -O "$INPUT_LOGO_PATH" "https://dummyimage.com/$INPUT_IMAGE_SIZE/${colour}/ffffff&text=${text}"
             exit 1
@@ -140,7 +138,7 @@ runs:
             "project": "%s",
             "author": "%s",
             "version": "%s"
-          }' "$INPUT_PROJECT_NAME" "$INPUT_PROJECT_AUTHOR" "$VERSION"
+          }' "$INPUT_PROJECT_NAME" "$INPUT_PROJECT_AUTHOR" "$INPUT_VERSION"
 
           echo "Downloading logo from imejis.io"
           curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID" \
@@ -198,4 +196,4 @@ runs:
         curl -X PUT "https://api.mod.io/v1/games/$INPUT_MODIO_GAME/mods/$INPUT_MODIO_MOD" \
         -H "Authorization: Bearer $INPUT_MODIO_TOKEN" \
         -d "description=$INPUT_README_HTML" \
-        -d "homepage_url=$PROJECT_URL"            
+        -d "homepage_url=$INPUT_PROJECT_URL"            
