@@ -20,7 +20,7 @@ inputs:
   projectName:
     description: 'Name of the project.'
     required: true
-  VERSION:
+  version:
     description: 'Optional - Version of the mod. Defaults to latest github release.'
     required: false
   projectUrl:
@@ -68,18 +68,39 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Determine Version
+    - name: Set env vars
       shell: bash
-      if: ${{ inputs.version }} == ""
       run: |
-        VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-        echo "INPUT_VERSION=$VERSION" >> $GITHUB_ENV
-    - name: Determine Version
-      shell: bash
-      if: ${{ inputs.projectUrl }} == ""
-      run: |
-        PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
-        echo "INPUT_PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
+        if ${{ inputs.version }} == ""; then
+          VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        else
+          VERSION=${{ inputs.version }}
+        fi
+        if ${{ inputs.projectUrl }} == ""; then
+          PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
+        else
+          PROJECT_URL=${{ inputs.projectUrl }}
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
+        echo "INPUT_LOGO_PATH=${{ inputs.logoPath }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGES_PATH=${{ inputs.imagesPath }}" >> $GITHUB_ENV
+        echo "INPUT_README_PATH=${{ inputs.readmePath }}" >> $GITHUB_ENV
+        echo "INPUT_PROJECT_AUTHOR=${{ inputs.projectAuthor }}" >> $GITHUB_ENV
+        echo "INPUT_PROJECT_NAME=${{ inputs.projectName }}" >> $GITHUB_ENV
+        echo "INPUT_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+        echo "INPUT_PROJECT_URL=${{ inputs.projectUrl }}" >> $GITHUB_ENV
+        echo "INPUT_IMEJIS_GENERATE_IMAGE=${{ inputs.imejisGenerateImage }}" >> $GITHUB_ENV
+        echo "INPUT_IMEJIS_DESIGN_ID=${{ inputs.imejisDesignId }}" >> $GITHUB_ENV
+        echo "INPUT_IMEJIS_KEY=${{ inputs.imejisKey }}" >> $GITHUB_ENV
+        echo "INPUT_MODIO_GAME=${{ inputs.modioGame }}" >> $GITHUB_ENV
+        echo "INPUT_MODIO_MOD=${{ inputs.modioMod }}" >> $GITHUB_ENV
+        echo "INPUT_MODIO_TOKEN=${{ inputs.modioToken }}" >> $GITHUB_ENV
+        echo "INPUT_BACKGROUND_COLOR=${{ inputs.backgroundColor }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGE_SIZE=${{ inputs.imageSize }}" >> $GITHUB_ENV
+        echo "INPUT_LOGO_UPLOAD_PATH=${{ inputs.logoUploadPath }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGES_UPLOAD_PATH=${{ inputs.imagesUploadPath }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGE_ZIP=${{ inputs.imageZip }}" >> $GITHUB_ENV
     - name: Install tools
       shell: bash
       run: |
@@ -119,7 +140,7 @@ runs:
             "project": "%s",
             "author": "%s",
             "version": "%s"
-          }' "$INPUT_PROJECT_NAME }}" "$INPUT_PROJECT_AUTHOR }}" "$INPUT_VERSION }}"
+          }' "$INPUT_PROJECT_NAME }}" "$INPUT_PROJECT_AUTHOR }}" "$VERSION }}"
 
           echo "Downloading logo from imejis.io"
           curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID }}" \
@@ -176,5 +197,5 @@ runs:
       run: |
         curl -X PUT "https://api.mod.io/v1/games/$INPUT_MODIO_GAME }}/mods/$INPUT_MODIO_MOD }}" \
         -H "Authorization: Bearer $INPUT_MODIO_TOKEN }}" \
-        -d "description=$README_HTML" \
-        -d "homepage_url=$INPUT_PROJECT_URL }}"            
+        -d "description=$INPUT_README_HTML" \
+        -d "homepage_url=$PROJECT_URL }}"            
