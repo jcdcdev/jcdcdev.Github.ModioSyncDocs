@@ -104,11 +104,8 @@ runs:
     - name: Install tools
       shell: bash
       run: |
-        sudo apt-get install pandoc
-        sudo apt-get install jq
-        sudo apt-get install zip
-        sudo apt-get install imagemagick
-    
+        sudo apt-get install pandoc jq zip imagemagick -y -qq
+
     - name: Configure ImageMagick
       shell: bash
       run: |
@@ -122,9 +119,9 @@ runs:
       shell: bash
       run: | 
         pandoc $INPUT_README_PATH -o README.html
-        README_HTML_SINGLE_LINE=$(cat README.html | tr '\n' ' ')
-        README_ENCODED=$(echo -n "$README_HTML_SINGLE_LINE" | jq -s -R -r @uri)
-        echo "README_HTML=$(printf '%q' "$README_ENCODED")" >> $GITHUB_ENV
+        readme_html_single_line=$(cat README.html | tr '\n' ' ')
+        readme_encoded=$(echo -n "$readme_html_single_line" | jq -s -R -r @uri)
+        echo "README_HTML=$(printf '%q' "$readme_encoded")" >> $GITHUB_ENV
     
     - name: Generate Logo
       shell: bash
@@ -137,7 +134,8 @@ runs:
         if [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
             echo "No logo found at $INPUT_LOGO_PATH and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
             text="$INPUT_PROJECT_NAME $INPUT_VERSION}"
-            colour=${$INPUT_BACKGROUND_COLOR//#/}
+            colour=${INPUT_BACKGROUND_COLOR//#/}
+            
             wget -O "$INPUT_LOGO_PATH" "https://dummyimage.com/$INPUT_IMAGE_SIZE/${colour}/ffffff&text=${text}"
           exit 1
         fi
@@ -186,10 +184,10 @@ runs:
     - name: Remove images from mod.io
       shell: bash
       run: |
-        RESPONSE=$(curl -s -H "Authorization: Bearer $INPUT_MODIO_TOKEN" "https://api.mod.io/v1/games/$INPUT_MODIO_GAME/mods/$INPUT_MODIO_MOD")
-        IMAGES_JSON=$(echo "$RESPONSE" | jq -r '.media.images[] | @base64')
+        response=$(curl -s -H "Authorization: Bearer $INPUT_MODIO_TOKEN" "https://api.mod.io/v1/games/$INPUT_MODIO_GAME/mods/$INPUT_MODIO_MOD")
+        jsonResponse=$(echo "$response" | jq -r '.media.images[] | @base64')
         
-        for image in $IMAGES_JSON; do
+        for image in $jsonResponse; do
           filename=$(echo "$image" | base64 --decode | jq -r '.filename')
           curl -X DELETE "https://api.mod.io/v1/games/$INPUT_MODIO_GAME/mods/$INPUT_MODIO_MOD/media" \
           -H "Authorization: Bearer $INPUT_MODIO_TOKEN" \
