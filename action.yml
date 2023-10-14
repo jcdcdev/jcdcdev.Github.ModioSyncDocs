@@ -104,21 +104,21 @@ runs:
     - name: Install tools
       shell: bash
       run: |
-        sudo apt-get install pandoc jq zip imagemagick -y -qq
+        sudo apt-get -qq install pandoc jq zip imagemagick -y 
 
     - name: Configure ImageMagick
       shell: bash
       run: |
-        sudo sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml
-        sudo sed -i -E 's/name="memory" value=".+"/name="memory" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
-        sudo sed -i -E 's/name="map" value=".+"/name="map" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
-        sudo sed -i -E 's/name="area" value=".+"/name="area" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
-        sudo sed -i -E 's/name="disk" value=".+"/name="disk" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
+        sudo sed -n -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml
+        sudo sed -n -i -E 's/name="memory" value=".+"/name="memory" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
+        sudo sed -n -i -E 's/name="map" value=".+"/name="map" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
+        sudo sed -n -i -E 's/name="area" value=".+"/name="area" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
+        sudo sed -n -i -E 's/name="disk" value=".+"/name="disk" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
     
     - name: Convert README.md to HTML
       shell: bash
       run: | 
-        pandoc $INPUT_README_PATH -o README.html
+        pandoc $INPUT_README_PATH -o README.html --quiet
         readme_html_single_line=$(cat README.html | tr '\n' ' ')
         readme_encoded=$(echo -n "$readme_html_single_line" | jq -s -R -r @uri)
         echo "README_HTML=$(printf '%q' "$readme_encoded")" >> $GITHUB_ENV
@@ -127,33 +127,29 @@ runs:
       shell: bash
       run: |      
         if [ -f "$INPUT_LOGO_PATH" ]; then
-          echo "Logo found at $INPUT_LOGO_PATH"
-          exit 1
-        fi
-
-        if [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
-            echo "No logo found at $INPUT_LOGO_PATH and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
+          echo "Logo found at $INPUT_LOGO_PATH. Using existing logo."
+        elif [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
+            echo "No logo found at $INPUT_LOGO_PATH and imejisGenerateImage is false. Downloading basic image."
             text="$INPUT_PROJECT_NAME $INPUT_VERSION}"
             colour=${INPUT_BACKGROUND_COLOR//#/}
             
             wget -O "$INPUT_LOGO_PATH" "https://dummyimage.com/$INPUT_IMAGE_SIZE/${colour}/ffffff&text=${text}"
-          exit 1
+        else
+          echo "Downloading logo from imejis.io"
+
+          printf -v JSON_DATA '
+          {
+            "project": "%s",
+            "author": "%s",
+            "version": "%s"
+          }' "$INPUT_PROJECT_NAME" "$INPUT_PROJECT_AUTHOR" "$INPUT_VERSION"
+
+          curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID" \
+            --header "dma-api-key: $INPUT_IMEJIS_KEY" \
+            --header 'Content-Type: application/json' \
+            --data "$JSON_DATA" \
+            --output "$INPUT_LOGO_PATH"     
         fi
-
-        echo "Downloading logo from imejis.io"
-
-        printf -v JSON_DATA '
-        {
-          "project": "%s",
-          "author": "%s",
-          "version": "%s"
-        }' "$INPUT_PROJECT_NAME" "$INPUT_PROJECT_AUTHOR" "$INPUT_VERSION"
-
-        curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID" \
-          --header "dma-api-key: $INPUT_IMEJIS_KEY" \
-          --header 'Content-Type: application/json' \
-          --data "$JSON_DATA" \
-          --output "$INPUT_LOGO_PATH"       
     
     - name: Resize images for mod.io
       shell: bash
