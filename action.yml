@@ -68,6 +68,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    
     - name: Set env
       shell: bash
       run: |
@@ -99,6 +100,7 @@ runs:
         echo "INPUT_LOGO_UPLOAD_PATH=${{ inputs.logoUploadPath }}" >> $GITHUB_ENV
         echo "INPUT_IMAGES_UPLOAD_PATH=${{ inputs.imagesUploadPath }}" >> $GITHUB_ENV
         echo "INPUT_IMAGE_ZIP=${{ inputs.imageZip }}" >> $GITHUB_ENV
+    
     - name: Install tools
       shell: bash
       run: |
@@ -106,6 +108,7 @@ runs:
         sudo apt-get install jq
         sudo apt-get install zip
         sudo apt-get install imagemagick
+    
     - name: Configure ImageMagick
       shell: bash
       run: |
@@ -114,6 +117,7 @@ runs:
         sudo sed -i -E 's/name="map" value=".+"/name="map" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
         sudo sed -i -E 's/name="area" value=".+"/name="area" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
         sudo sed -i -E 's/name="disk" value=".+"/name="disk" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
+    
     - name: Convert README.md to HTML
       shell: bash
       run: | 
@@ -121,10 +125,16 @@ runs:
         README_HTML_SINGLE_LINE=$(cat README.html | tr '\n' ' ')
         README_ENCODED=$(echo -n "$README_HTML_SINGLE_LINE" | jq -s -R -r @uri)
         echo "README_HTML=$(printf '%q' "$README_ENCODED")" >> $GITHUB_ENV
+    
     - name: Generate Logo
       shell: bash
       if: ${{ ! -f "${{ env.INPUT_LOGO_PATH }}" }}
       run: |      
+        if [ -f "$INPUT_LOGO_PATH" ]; then
+          echo "Logo found at $INPUT_LOGO_PATH"
+          exit 1
+        fi
+
         if [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
             echo "No logo found at $INPUT_LOGO_PATH and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
             text="$INPUT_PROJECT_NAME $INPUT_VERSION}"
@@ -133,6 +143,8 @@ runs:
           exit 1
         fi
 
+        echo "Downloading logo from imejis.io"
+
         printf -v JSON_DATA '
         {
           "project": "%s",
@@ -140,12 +152,12 @@ runs:
           "version": "%s"
         }' "$INPUT_PROJECT_NAME" "$INPUT_PROJECT_AUTHOR" "$INPUT_VERSION"
 
-        echo "Downloading logo from imejis.io"
         curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID" \
           --header "dma-api-key: $INPUT_IMEJIS_KEY" \
           --header 'Content-Type: application/json' \
           --data "$JSON_DATA" \
           --output "$INPUT_LOGO_PATH"       
+    
     - name: Resize images for mod.io
       shell: bash
       run: |
@@ -166,10 +178,12 @@ runs:
             fi
           fi
         done
+    
     - name: Zip images
       shell: bash
       run: |
         zip -r -j "$INPUT_IMAGE_ZIP" "$INPUT_IMAGES_UPLOAD_PATH" "$INPUT_LOGO_UPLOAD_PATH"
+    
     - name: Remove images from mod.io
       shell: bash
       run: |
@@ -182,6 +196,7 @@ runs:
           -H "Authorization: Bearer $INPUT_MODIO_TOKEN" \
           -d "images[]=$filename"
         done
+    
     - name: Upload images to mod.io
       shell: bash
       run: |
@@ -189,6 +204,7 @@ runs:
         -H "Authorization: Bearer $INPUT_MODIO_TOKEN" \
         -F "logo=@$INPUT_LOGO_UPLOAD_PATH" \
         -F "images=@$INPUT_IMAGE_ZIP"
+    
     - name: Update modio mod description
       shell: bash
       run: |
