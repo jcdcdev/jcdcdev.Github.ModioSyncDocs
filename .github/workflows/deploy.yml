@@ -20,12 +20,12 @@ jobs:
     - name: Determine Version
       id: gitversion
       uses: gittools/actions/gitversion/execute@v0
-    - name: Tag commit
+    - name: Tag ${{ env.GitVersion_SemVer }}
       run: |
         git config --local user.email "james@jcdc.dev"
         git config --local user.name "James"
         git tag -a "$GitVersion_SemVer" -m "Release $GitVersion_SemVer"
-    - name: Create new release
+    - name: Create Release ${{ env.GitVersion_SemVer }}
       uses: ncipollo/release-action@v1
       with:
         prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
@@ -33,7 +33,7 @@ jobs:
         tag: ${{ env.GitVersion_SemVer }}
         allowUpdates: true
         makeLatest: true
-    - name: Push changes
+    - name: Push ${{ env.GitVersion_SemVer }}
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}

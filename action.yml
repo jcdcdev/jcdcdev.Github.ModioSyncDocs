@@ -1,5 +1,5 @@
-name: 'Sync modio mod assets'
-description: 'This action syncs modio mod assets.'
+name: 'Sync mod.io README and Images'
+description: 'Converts your README.md to HTML and uploads it to mod.io along with your images and logo. Optionally generates a logo from imejis.io'
 author: 'James Carter'
 branding:
   icon: 'refresh-cw'
@@ -68,7 +68,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Set env vars
+    - name: Set env
       shell: bash
       run: |
         if "${{ inputs.version }}"" == ""; then
@@ -114,7 +114,7 @@ runs:
         sudo sed -i -E 's/name="map" value=".+"/name="map" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
         sudo sed -i -E 's/name="area" value=".+"/name="area" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
         sudo sed -i -E 's/name="disk" value=".+"/name="disk" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
-    - name: Convert README to HTML
+    - name: Convert README.md to HTML
       shell: bash
       run: | 
         pandoc $INPUT_README_PATH -o README.html
@@ -123,30 +123,29 @@ runs:
         echo "README_HTML=$(printf '%q' "$README_ENCODED")" >> $GITHUB_ENV
     - name: Generate Logo
       shell: bash
+      if: ${{ ! -f "$INPUT_LOGO_PATH" }}
       run: |      
-        if [ ! -f "$INPUT_LOGO_PATH" ]; then
-          if [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
-              echo "No logo found at $INPUT_LOGO_PATH and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
-              text="$INPUT_PROJECT_NAME $INPUT_VERSION}"
-              colour=${"$INPUT_BACKGROUND_COLOR"//#/}
-              wget -O "$INPUT_LOGO_PATH" "https://dummyimage.com/$INPUT_IMAGE_SIZE/${colour}/ffffff&text=${text}"
-            exit 1
-          fi
-
-          printf -v JSON_DATA '
-          {
-            "project": "%s",
-            "author": "%s",
-            "version": "%s"
-          }' "$INPUT_PROJECT_NAME" "$INPUT_PROJECT_AUTHOR" "$INPUT_VERSION"
-
-          echo "Downloading logo from imejis.io"
-          curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID" \
-            --header "dma-api-key: $INPUT_IMEJIS_KEY" \
-            --header 'Content-Type: application/json' \
-            --data "$JSON_DATA" \
-            --output "$INPUT_LOGO_PATH"
+        if [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
+            echo "No logo found at $INPUT_LOGO_PATH and IMEJIS_GENERATE_IMAGE is false. Downloading basic image."
+            text="$INPUT_PROJECT_NAME $INPUT_VERSION}"
+            colour=${$INPUT_BACKGROUND_COLOR//#/}
+            wget -O "$INPUT_LOGO_PATH" "https://dummyimage.com/$INPUT_IMAGE_SIZE/${colour}/ffffff&text=${text}"
+          exit 1
         fi
+
+        printf -v JSON_DATA '
+        {
+          "project": "%s",
+          "author": "%s",
+          "version": "%s"
+        }' "$INPUT_PROJECT_NAME" "$INPUT_PROJECT_AUTHOR" "$INPUT_VERSION"
+
+        echo "Downloading logo from imejis.io"
+        curl "https://api.imejis.io/api/designs/$INPUT_IMEJIS_DESIGN_ID" \
+          --header "dma-api-key: $INPUT_IMEJIS_KEY" \
+          --header 'Content-Type: application/json' \
+          --data "$JSON_DATA" \
+          --output "$INPUT_LOGO_PATH"       
     - name: Resize images for mod.io
       shell: bash
       run: |
