@@ -159,7 +159,7 @@ runs:
 
         convert "$INPUT_LOGO_PATH" -resize "$INPUT_IMAGE_SIZE" -background "$INPUT_BACKGROUND_COLOR" -gravity center -extent "$INPUT_IMAGE_SIZE" "$INPUT_LOGO_UPLOAD_PATH"
       
-        for file in $IMAGES_PATH/*; do
+        for file in $INPUT_IMAGES_PATH/*; do
           if [[ -f $file ]]; then
             filename=$(basename -- "$file")
             if file --mime-type "$file" | grep -qE 'image/(jpeg|png|gif|tiff|bmp)'; then
