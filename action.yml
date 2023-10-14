@@ -130,7 +130,7 @@ runs:
           echo "Logo found at $INPUT_LOGO_PATH. Using existing logo."
         elif [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
             echo "No logo found at $INPUT_LOGO_PATH and imejisGenerateImage is false. Downloading basic image."
-            text="$INPUT_PROJECT_NAME $INPUT_VERSION}"
+            text="$INPUT_PROJECT_NAME"
             colour=${INPUT_BACKGROUND_COLOR//#/}
             
             wget -O "$INPUT_LOGO_PATH" "https://dummyimage.com/$INPUT_IMAGE_SIZE/${colour}/ffffff&text=${text}"
