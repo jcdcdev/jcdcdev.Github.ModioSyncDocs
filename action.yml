@@ -121,7 +121,7 @@ runs:
         pandoc $INPUT_README_PATH -o README.html --quiet
         readme_html_single_line=$(cat README.html | tr '\n' ' ')
         readme_encoded=$(echo -n "$readme_html_single_line" | jq -s -R -r @uri)
-        echo "README_HTML=$(printf '%q' "$readme_encoded")" >> $GITHUB_ENV
+        echo "INPUT_README_HTML=$(printf '%q' "$readme_encoded")" >> $GITHUB_ENV
     
     - name: Generate Logo
       shell: bash
