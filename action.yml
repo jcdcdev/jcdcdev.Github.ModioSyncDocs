@@ -83,6 +83,17 @@ runs:
         else
           PROJECT_URL="${{ inputs.project-url }}"
         fi
+
+        if [[ -z $VERSION ]]; then
+          echo "Version not set. Exiting."
+          exit 1
+        fi
+
+        if [[ -z $PROJECT_URL ]]; then
+          echo "Project URL not set. Exiting."
+          exit 1
+        fi
+
         echo "INPUT_VERSION=$VERSION" >> $GITHUB_ENV
         echo "INPUT_PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
         echo "INPUT_LOGO_PATH=${{ inputs.logo-path }}" >> $GITHUB_ENV
