@@ -74,12 +74,12 @@ runs:
         if "${{ inputs.version }}" == ""; then
           VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         else
-          VERSION=${{ inputs.version }}
+          VERSION="${{ inputs.version }}""
         fi
         if "${{ inputs.project-url }}" == ""; then
           PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
         else
-          PROJECT_URL=${{ inputs.project-url }}
+          PROJECT_URL="${{ inputs.project-url }}"
         fi
         echo "INPUT_VERSION=$VERSION" >> $GITHUB_ENV
         echo "INPUT_PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
