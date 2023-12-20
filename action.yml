@@ -73,11 +73,13 @@ runs:
       run: |
         if [[ -z "${{ inputs.version }}" ]]; then
           VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "Latest version is $VERSION"
         else
           VERSION="${{ inputs.version }}""
         fi
         if [[ -z "${{ inputs.project-url }}" ]]; then
           PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
+          echo "Project URL not set. Using $PROJECT_URL"
         else
           PROJECT_URL="${{ inputs.project-url }}"
         fi
