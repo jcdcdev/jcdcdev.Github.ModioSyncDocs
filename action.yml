@@ -71,12 +71,12 @@ runs:
     - name: Set env
       shell: bash
       run: |
-        if "${{ inputs.version }}"" == ""; then
+        if "${{ inputs.version }}" == ""; then
           VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         else
           VERSION=${{ inputs.version }}
         fi
-        if "${{ inputs.project-url }}"" == ""; then
+        if "${{ inputs.project-url }}" == ""; then
           PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
         else
           PROJECT_URL=${{ inputs.project-url }}
