@@ -1,74 +1,73 @@
-name: 'Sync mod.io README and Images'
-description: 'Converts your README.md to HTML and uploads it to mod.io along with your images and logo. Optionally generates a logo from imejis.io'
-author: 'James Carter'
+name: "Sync mod.io README and Images"
+description: "Converts your README.md to HTML and uploads it to mod.io along with your images and logo. Optionally generates a logo from imejis.io"
+author: "James Carter"
 branding:
-  icon: 'refresh-cw'
-  color: 'gray-dark'
+  icon: "refresh-cw"
+  color: "gray-dark"
 inputs:
-  logoPath:
-    description: 'Path to the logo.'
+  logo-path:
+    description: "Path to the logo."
     required: true
-  imagesPath:
-    description: 'Path to the images.'
+  images-path:
+    description: "Path to the images."
     required: true
-  readmePath:
-    description: 'Path to the README file.'
+  readme-path:
+    description: "Path to the README file."
     required: true
-  projectAuthor:
-    description: 'Author of the project.'
+  project-author:
+    description: "Author of the project."
     required: true
-  projectName:
-    description: 'Name of the project.'
+  project-name:
+    description: "Name of the project."
     required: true
   version:
-    description: 'Optional - Version of the mod. Defaults to latest github release.'
+    description: "Optional - Version of the mod. Defaults to latest github release."
     required: false
-  projectUrl:
-    description: 'Homepage URL displayed on mod.io.'
+  project-url:
+    description: "Homepage URL displayed on mod.io."
     required: false
-  imejisGenerateImage:
-    description: 'Generate image from imejis.io.'
+  imejis-generate-image:
+    description: "Generate image from imejis.io."
     required: false
     default: "false"
-  imejisDesignId:
-    description: 'Imejis Design ID.'
+  imejis-design-id:
+    description: "Imejis Design ID."
     required: false
-  imejisKey:
-    description: 'Imejis Key.'
-    required: false
-  modioGame:
-    description: 'Mod.io Game Id.'
+  modio-game:
+    description: "Mod.io Game Id."
     required: true
-  modioMod:
-    description: 'Mod.io Mod Id.'
+  modio-mod:
+    description: "Mod.io Mod Id."
     required: true
-  modioToken:
-    description: 'Mod.io Token.'
-    required: true
-  backgroundColor:
-    description: 'Optional - Background color used to pad resized images.'
+  background-color:
+    description: "Optional - Background color used to pad resized images."
     required: false
     default: "#0a1206"
-  imageSize:
-    description: 'Optional - ImageMagick resize image resolution.'
+  image-size:
+    description: "Optional - ImageMagick resize image resolution."
     required: false
     default: "1920x1080"
-  logoUploadPath:
-    description: 'Optional - Path to upload the logo.'
+  logo-upload-path:
+    description: "Optional - Path to upload the logo."
     required: false
-    default: "temp_upload/0000_Logo.png"
-  imagesUploadPath:
-    description: 'Optional - Path to upload the images.'
+    default: "temp_upload/0001_Logo.png"
+  images-upload-path:
+    description: "Optional - Path to upload the images."
     required: false
     default: "temp_upload"
-  imageZip:
-    description: 'Optional - Path to the zip file of the images.'
+  image-zip:
+    description: "Optional - Path to the zip file of the images."
     required: false
     default: "temp_upload/images.zip"
+  imejis-key:
+    description: "Imejis Key."
+    required: false
+  modio-token:
+    description: "Mod.io Token."
+    required: true
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    
     - name: Set env
       shell: bash
       run: |
@@ -77,34 +76,34 @@ runs:
         else
           VERSION=${{ inputs.version }}
         fi
-        if "${{ inputs.projectUrl }}"" == ""; then
+        if "${{ inputs.project-url }}"" == ""; then
           PROJECT_URL="${{ github.server_url }}/${{ github.repository }}"
         else
-          PROJECT_URL=${{ inputs.projectUrl }}
+          PROJECT_URL=${{ inputs.project-url }}
         fi
         echo "INPUT_VERSION=$VERSION" >> $GITHUB_ENV
         echo "INPUT_PROJECT_URL=$PROJECT_URL" >> $GITHUB_ENV
-        echo "INPUT_LOGO_PATH=${{ inputs.logoPath }}" >> $GITHUB_ENV
-        echo "INPUT_IMAGES_PATH=${{ inputs.imagesPath }}" >> $GITHUB_ENV
-        echo "INPUT_README_PATH=${{ inputs.readmePath }}" >> $GITHUB_ENV
-        echo "INPUT_PROJECT_AUTHOR=${{ inputs.projectAuthor }}" >> $GITHUB_ENV
-        echo "INPUT_PROJECT_NAME=${{ inputs.projectName }}" >> $GITHUB_ENV
-        echo "INPUT_IMEJIS_GENERATE_IMAGE=${{ inputs.imejisGenerateImage }}" >> $GITHUB_ENV
-        echo "INPUT_IMEJIS_DESIGN_ID=${{ inputs.imejisDesignId }}" >> $GITHUB_ENV
-        echo "INPUT_IMEJIS_KEY=${{ inputs.imejisKey }}" >> $GITHUB_ENV
-        echo "INPUT_MODIO_GAME=${{ inputs.modioGame }}" >> $GITHUB_ENV
-        echo "INPUT_MODIO_MOD=${{ inputs.modioMod }}" >> $GITHUB_ENV
-        echo "INPUT_MODIO_TOKEN=${{ inputs.modioToken }}" >> $GITHUB_ENV
-        echo "INPUT_BACKGROUND_COLOR=${{ inputs.backgroundColor }}" >> $GITHUB_ENV
-        echo "INPUT_IMAGE_SIZE=${{ inputs.imageSize }}" >> $GITHUB_ENV
-        echo "INPUT_LOGO_UPLOAD_PATH=${{ inputs.logoUploadPath }}" >> $GITHUB_ENV
-        echo "INPUT_IMAGES_UPLOAD_PATH=${{ inputs.imagesUploadPath }}" >> $GITHUB_ENV
-        echo "INPUT_IMAGE_ZIP=${{ inputs.imageZip }}" >> $GITHUB_ENV
-    
+        echo "INPUT_LOGO_PATH=${{ inputs.logo-path }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGES_PATH=${{ inputs.images-path }}" >> $GITHUB_ENV
+        echo "INPUT_README_PATH=${{ inputs.readme-path }}" >> $GITHUB_ENV
+        echo "INPUT_PROJECT_AUTHOR=${{ inputs.project-author }}" >> $GITHUB_ENV
+        echo "INPUT_PROJECT_NAME=${{ inputs.project-name }}" >> $GITHUB_ENV
+        echo "INPUT_IMEJIS_GENERATE_IMAGE=${{ inputs.imejis-generate-image }}" >> $GITHUB_ENV
+        echo "INPUT_IMEJIS_DESIGN_ID=${{ inputs.imejis-design-id }}" >> $GITHUB_ENV
+        echo "INPUT_IMEJIS_KEY=${{ inputs.imejis-key }}" >> $GITHUB_ENV
+        echo "INPUT_MODIO_GAME=${{ inputs.modio-game }}" >> $GITHUB_ENV
+        echo "INPUT_MODIO_MOD=${{ inputs.modio-mod }}" >> $GITHUB_ENV
+        echo "INPUT_MODIO_TOKEN=${{ inputs.modio-token }}" >> $GITHUB_ENV
+        echo "INPUT_BACKGROUND_COLOR=${{ inputs.background-color }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGE_SIZE=${{ inputs.image-size }}" >> $GITHUB_ENV
+        echo "INPUT_LOGO_UPLOAD_PATH=${{ inputs.logo-upload-path }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGES_UPLOAD_PATH=${{ inputs.images-upload-path }}" >> $GITHUB_ENV
+        echo "INPUT_IMAGE_ZIP=${{ inputs.image-zip }}" >> $GITHUB_ENV
+
     - name: Install tools
       shell: bash
       run: |
-        sudo apt-get -qq install pandoc jq zip imagemagick -y 
+        sudo apt-get -qq install pandoc jq zip imagemagick -y
 
     - name: Configure ImageMagick
       shell: bash
@@ -114,18 +113,18 @@ runs:
         sudo sed -n -i -E 's/name="map" value=".+"/name="map" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
         sudo sed -n -i -E 's/name="area" value=".+"/name="area" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
         sudo sed -n -i -E 's/name="disk" value=".+"/name="disk" value="8GiB"/g' /etc/ImageMagick-6/policy.xml
-    
+
     - name: Convert README.md to HTML
       shell: bash
-      run: | 
+      run: |
         pandoc $INPUT_README_PATH -o README.html --quiet
         readme_html_single_line=$(cat README.html | tr '\n' ' ')
         readme_encoded=$(echo -n "$readme_html_single_line" | jq -s -R -r @uri)
         echo "INPUT_README_HTML=$(printf '%q' "$readme_encoded")" >> $GITHUB_ENV
-    
+
     - name: Generate Logo
       shell: bash
-      run: |      
+      run: |
         if [ -f "$INPUT_LOGO_PATH" ]; then
           echo "Logo found at $INPUT_LOGO_PATH. Using existing logo."
         elif [ "$INPUT_IMEJIS_GENERATE_IMAGE" == "false" ]; then
@@ -150,7 +149,7 @@ runs:
             --data "$JSON_DATA" \
             --output "$INPUT_LOGO_PATH"     
         fi
-    
+
     - name: Resize images for mod.io
       shell: bash
       run: |
@@ -158,7 +157,7 @@ runs:
         rm -rf "$INPUT_IMAGES_UPLOAD_PATH"/*
 
         convert "$INPUT_LOGO_PATH" -resize "$INPUT_IMAGE_SIZE" -background "$INPUT_BACKGROUND_COLOR" -gravity center -extent "$INPUT_IMAGE_SIZE" "$INPUT_LOGO_UPLOAD_PATH"
-      
+
         for file in $INPUT_IMAGES_PATH/*; do
           if [[ -f $file ]]; then
             filename=$(basename -- "$file")
@@ -171,25 +170,25 @@ runs:
             fi
           fi
         done
-    
+
     - name: Zip images
       shell: bash
       run: |
         zip -r -j "$INPUT_IMAGE_ZIP" "$INPUT_IMAGES_UPLOAD_PATH" "$INPUT_LOGO_UPLOAD_PATH"
-    
+
     - name: Remove images from mod.io
       shell: bash
       run: |
         response=$(curl -s -H "Authorization: Bearer $INPUT_MODIO_TOKEN" "https://api.mod.io/v1/games/$INPUT_MODIO_GAME/mods/$INPUT_MODIO_MOD")
         jsonResponse=$(echo "$response" | jq -r '.media.images[] | @base64')
-        
+
         for image in $jsonResponse; do
           filename=$(echo "$image" | base64 --decode | jq -r '.filename')
           curl -X DELETE "https://api.mod.io/v1/games/$INPUT_MODIO_GAME/mods/$INPUT_MODIO_MOD/media" \
           -H "Authorization: Bearer $INPUT_MODIO_TOKEN" \
           -d "images[]=$filename"
         done
-    
+
     - name: Upload images to mod.io
       shell: bash
       run: |
@@ -197,11 +196,11 @@ runs:
         -H "Authorization: Bearer $INPUT_MODIO_TOKEN" \
         -F "logo=@$INPUT_LOGO_UPLOAD_PATH" \
         -F "images=@$INPUT_IMAGE_ZIP"
-    
+
     - name: Update modio mod description
       shell: bash
       run: |
         curl -X PUT "https://api.mod.io/v1/games/$INPUT_MODIO_GAME/mods/$INPUT_MODIO_MOD" \
         -H "Authorization: Bearer $INPUT_MODIO_TOKEN" \
         -d "description=$INPUT_README_HTML" \
-        -d "homepage_url=$INPUT_PROJECT_URL"            
+        -d "homepage_url=$INPUT_PROJECT_URL"
